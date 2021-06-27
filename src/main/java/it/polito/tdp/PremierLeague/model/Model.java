@@ -12,20 +12,20 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
-import it.polito.tdp.PremierLeague.db.Adiacenza;
 import it.polito.tdp.PremierLeague.db.PremierLeagueDAO;
 
 public class Model {
 	
-	private SimpleDirectedWeightedGraph <Team, DefaultWeightedEdge> grafo;
+	private SimpleDirectedWeightedGraph <Team,DefaultWeightedEdge> grafo;
 	private PremierLeagueDAO dao;
-	private Map<Integer,Team> idMap;
+	private Map<Integer, Team> idMap;
 	
 	public Model() {
 		dao = new PremierLeagueDAO();
-		idMap = new HashMap<Integer,Team>();
+		idMap = new HashMap <Integer, Team>();
 		dao.listAllTeams(idMap);
 	}
+	
 	
 	public void creaGrafo() {
 		grafo = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
@@ -33,76 +33,37 @@ public class Model {
 		// aggiungo i vertici
 		Graphs.addAllVertices(grafo, idMap.values());
 		
-		// aggiungo gli archi
+		// agiungo gli archi
 		for (Adiacenza a: dao.getAdiacenze(idMap)) {
-			if (this.grafo.containsVertex(a.getTh()) && this.grafo.containsVertex(a.getTa())) {
-				Team t1 = a.getTh();
-				Team t2 = a.getTa();
+			if(this.grafo.containsVertex(a.getTh()) && this.grafo.containsVertex(a.getTa())) {
 				
-				int punti1 = this.calcolaPunti(t1);
-				int punti2 = this.calcolaPunti(t2);
+				Team th = a.getTh();
+				Team ta = a.getTa();
 				
-				if (punti1>punti2) {
-					// arco orientato da t1 a t2 
-					int peso = punti1-punti2;
-					Graphs.addEdgeWithVertices(this.grafo, t1, t2, peso);
-					
-				}else if (punti2>punti1) {
-					int peso = punti2-punti1;
-					Graphs.addEdgeWithVertices(this.grafo, t2, t1, peso);
+				if(th.getPunti()>ta.getPunti()) {
+					// da th a ta
+					double peso = th.getPunti()-ta.getPunti();
+					Graphs.addEdgeWithVertices(this.grafo, a.getTh(), a.getTa(), peso);
 				}
-				
+				else if(th.getPunti()<ta.getPunti()) {
+					// da ta a th
+					double peso = th.getPunti()-ta.getPunti();
+					Graphs.addEdgeWithVertices(this.grafo,a.getTa(), a.getTh(), Math.abs(peso));
+				}
 			}
 		}
-		
-		
 	}
-	
-	
-	// calcolo i punti per ogni team
-	
-	public int calcolaPunti(Team t) {
-		int punti = 0;
-		for (Adiacenza a : dao.getAdiacenze(idMap)) {
-			
-			// se la squadra passata è la squadra di casa
-			if (a.getTh().equals(t)) {
-			
-				
-				if(a.getRisultato()==1) {
-					punti = punti + 3;
-				} else if (a.getRisultato()==0) {
-					punti = punti + 1;
-				} else {
-					punti = punti + 0;
-				}
-				t.setPunti(punti);
-				
-			}
-			else if (a.getTa().equals(t)) {
-				
-				if(a.getRisultato()== -1) {
-					punti = punti + 3;
-				} else if (a.getRisultato()==0) {
-					punti = punti + 1;
-				} else {
-					punti = punti + 0;
-				}
-				t.setPunti(punti);
-			}
-		}
-		return t.getPunti();
-	}
-	
-	public int getNumeroVertici() {
-		if(this.grafo!=null) {
+
+
+	public int getNumVertici() {
+		if (this.grafo!=null) {
 			return this.grafo.vertexSet().size();
 		}
 		return 0;
 	}
 	
-	public int getNumeroArchi() {
-		if(this.grafo!=null) {
+	public int getNumArchi() {
+		if (this.grafo!=null) {
 			return this.grafo.edgeSet().size();
 		}
 		return 0;
@@ -112,63 +73,63 @@ public class Model {
 		return this.grafo.vertexSet();
 	}
 	
-	public List<TeamMigliori> getMigliori (Team t){
-		LinkedList <TeamMigliori> migliori = new LinkedList<TeamMigliori>();
+	public List<TeamPeggiori> getTeamPeggiori(Team t){
 		
-		for (Team tt: this.grafo.vertexSet()) {
-			
-			if (!t.equals(tt)) {
-				if(t.getPunti()<tt.getPunti()) {
-					DefaultWeightedEdge arco = this.grafo.getEdge(tt, t);
-					double peso = this.grafo.getEdgeWeight(arco);
-					
-					TeamMigliori tm = new TeamMigliori (tt, peso);
-					migliori.add(tm);
-				}
-			}
-			
-		}
-		Collections.sort(migliori, new Comparator<TeamMigliori>(){
-
-			@Override
-			public int compare(TeamMigliori o1, TeamMigliori o2) {
-				Double p1 = o1.getPeso();
-				Double p2 = o2.getPeso();
-				return p1.compareTo(p2);
-			}
-			
-		});
-		return migliori;
-	}
-	
-	public List<TeamPeggiori> getPeggiori (Team t){
-		LinkedList <TeamPeggiori> peggiori = new LinkedList<TeamPeggiori>();
+		List<TeamPeggiori> peggiori = new LinkedList<TeamPeggiori>();
 		
-		for (Team tt: this.grafo.vertexSet()) {
+		// l'arco è orientato da chi ha collezionato più punti a chi meno
+		// quindi tutte le squadre collegate con un arco uscente da t
+		// hanno meno punti in classifica
+		
+		for(DefaultWeightedEdge battuto: this.grafo.outgoingEdgesOf(t)) {
 			
-			if (!t.equals(tt)) {
-				if(t.getPunti()>tt.getPunti()) {
-					DefaultWeightedEdge arco = this.grafo.getEdge(t, tt);
-					double peso = this.grafo.getEdgeWeight(arco);
-					
-					TeamPeggiori tp = new TeamPeggiori (tt, peso);
-					peggiori.add(tp);
-				}
-			}
-			
+			double peso = this.grafo.getEdgeWeight(battuto);
+			Team peggiore = this.grafo.getEdgeTarget(battuto);
+			TeamPeggiori tp = new TeamPeggiori (peggiore, peso);
+			peggiori.add(tp);
 		}
+		
 		Collections.sort(peggiori, new Comparator<TeamPeggiori>() {
 
 			@Override
 			public int compare(TeamPeggiori o1, TeamPeggiori o2) {
-				Double p1 = o1.getPeso();
-				Double p2 = o2.getPeso();
-				return p1.compareTo(p2);
+				Double d1 = o1.getPunti();
+				Double d2 = o2.getPunti();
+				return d1.compareTo(d2);
 			}
 			
 		});
 		return peggiori;
 	}
 	
-	
+	public List<TeamMigliori> getTeamMigliori(Team t){
+		
+		List<TeamMigliori> migliori = new LinkedList<TeamMigliori>();
+		
+		// l'arco è orientato da chi ha collezionato più punti a chi meno
+		// quindi tutti le squadre collegate con un arco entrante a t
+		// hanno più punti in classifica di t
+		
+		for(DefaultWeightedEdge arco: this.grafo.incomingEdgesOf(t)) {
+			
+			double peso = this.grafo.getEdgeWeight(arco);
+			Team migliore = this.grafo.getEdgeSource(arco);
+			TeamMigliori tm = new TeamMigliori (migliore, peso);
+			migliori.add(tm);
+		}
+		
+		Collections.sort(migliori, new Comparator<TeamMigliori>() {
+
+			@Override
+			public int compare(TeamMigliori o1, TeamMigliori o2) {
+				Double d1 = o1.getPeso();
+				Double d2 = o2.getPeso();
+				return d1.compareTo(d2);
+			}
+
+			
+			
+		});
+		return migliori;
+	}
 }

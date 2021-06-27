@@ -1,6 +1,6 @@
 package it.polito.tdp.PremierLeague.model;
 
-public class TeamMigliori{
+public class TeamMigliori {
 
 	Team t;
 	double peso;
@@ -23,7 +23,7 @@ public class TeamMigliori{
 	}
 	@Override
 	public String toString() {
-		return t.getName() + " (" + peso+")" ;
+		return t + " (" + peso + ")";
 	}
 	
 	

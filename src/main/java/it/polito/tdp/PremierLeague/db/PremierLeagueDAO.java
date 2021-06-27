@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import it.polito.tdp.PremierLeague.model.Action;
+import it.polito.tdp.PremierLeague.model.Adiacenza;
 import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Player;
 import it.polito.tdp.PremierLeague.model.Team;
@@ -38,29 +39,27 @@ public class PremierLeagueDAO {
 		}
 	}
 	
-	public void listAllTeams(Map <Integer, Team> idMap){
+	public void listAllTeams(Map<Integer, Team> idMap){
 		String sql = "SELECT * FROM Teams";
-	// 	List<Team> result = new ArrayList<Team>();
+	//	List<Team> result = new ArrayList<Team>();
 		Connection conn = DBConnect.getConnection();
 
 		try {
 			PreparedStatement st = conn.prepareStatement(sql);
 			ResultSet res = st.executeQuery();
 			while (res.next()) {
-
 				if(!idMap.containsKey(res.getInt("TeamID"))) {
 					Team team = new Team(res.getInt("TeamID"), res.getString("Name"));
+				//	result.add(team);
 					idMap.put(team.getTeamID(), team);
 				}
-				
-			// 	result.add(team);
 			}
 			conn.close();
-		// 	return result;
+		//	return result;
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			// return null;
+		//	return null;
 		}
 	}
 	
@@ -119,9 +118,8 @@ public class PremierLeagueDAO {
 	}
 	
 	public List<Adiacenza> getAdiacenze(Map<Integer, Team> idMap){
-		String sql = "SELECT m.TeamHomeID, m.TeamAwayID, m.ResultOfTeamHome AS risultato "
+		String sql = "SELECT m.TeamHomeID AS th, m.TeamAwayID AS ta, m.ResultOfTeamHome AS risultato "
 				+ "FROM matches m";
-	
 		List<Adiacenza> result = new ArrayList<Adiacenza>();
 		Connection conn = DBConnect.getConnection();
 
@@ -130,13 +128,26 @@ public class PremierLeagueDAO {
 			ResultSet res = st.executeQuery();
 			while (res.next()) {
 
-				Team th = idMap.get(res.getInt("m.TeamHomeID"));
-				Team ta = idMap.get(res.getInt("m.TeamAwayID"));
+				// salvo tutte le adiacenze
+				Team th = idMap.get(res.getInt("th"));
+				Team ta = idMap.get(res.getInt("ta"));
 				
-				Adiacenza a = new Adiacenza(th, ta, res.getInt("risultato") );
+				Adiacenza a = new Adiacenza (th, ta, res.getDouble("risultato"));
 				result.add(a);
 				
+				// man mano, per ogni risultato salvo i punti alle squadre
 				
+				if(res.getDouble("risultato") == +1) {
+					th.setPunti(th.getPunti()+3);
+				} 
+				else if (res.getDouble("risultato") == 0) {
+					th.setPunti(th.getPunti()+1);
+					ta.setPunti(ta.getPunti()+1);
+				} 
+				else if (res.getDouble("risultato") == -1) {
+					ta.setPunti(ta.getPunti()+3);
+				}
+
 			}
 			conn.close();
 			return result;
@@ -145,5 +156,7 @@ public class PremierLeagueDAO {
 			e.printStackTrace();
 			return null;
 		}
+		
 	}
+	
 }

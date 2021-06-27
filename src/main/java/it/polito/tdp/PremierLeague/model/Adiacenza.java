@@ -1,20 +1,16 @@
-package it.polito.tdp.PremierLeague.db;
-
-import it.polito.tdp.PremierLeague.model.Team;
+package it.polito.tdp.PremierLeague.model;
 
 public class Adiacenza {
 
 	Team th;
 	Team ta;
-	int risultato;
-	
-	public Adiacenza(Team th, Team ta, int risultato) {
+	double risultato; // +1, -1, 0
+	public Adiacenza(Team th, Team ta, double risultato) {
 		super();
 		this.th = th;
 		this.ta = ta;
 		this.risultato = risultato;
 	}
-	
 	public Team getTh() {
 		return th;
 	}
@@ -27,14 +23,12 @@ public class Adiacenza {
 	public void setTa(Team ta) {
 		this.ta = ta;
 	}
-	public int getRisultato() {
+	public double getRisultato() {
 		return risultato;
 	}
-	public void setRisultato(int risultato) {
+	public void setRisultato(double risultato) {
 		this.risultato = risultato;
 	}
-	
-	
 	
 	
 }

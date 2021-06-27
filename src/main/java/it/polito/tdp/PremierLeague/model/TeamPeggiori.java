@@ -2,12 +2,12 @@ package it.polito.tdp.PremierLeague.model;
 
 public class TeamPeggiori {
 
-	Team t; 
-	double peso;
-	public TeamPeggiori(Team t, double peso) {
+	Team t;
+	double punti;
+	public TeamPeggiori(Team t, double punti) {
 		super();
 		this.t = t;
-		this.peso = peso;
+		this.punti = punti;
 	}
 	public Team getT() {
 		return t;
@@ -15,16 +15,17 @@ public class TeamPeggiori {
 	public void setT(Team t) {
 		this.t = t;
 	}
-	public double getPeso() {
-		return peso;
+	public double getPunti() {
+		return punti;
 	}
-	public void setPeso(double peso) {
-		this.peso = peso;
+	public void setPunti(double punti) {
+		this.punti = punti;
 	}
 	@Override
 	public String toString() {
-		return t.getName() + " (" + peso + ")";
-	} 
+		return t + ", (" + punti + ")";
+	}
+	
 	
 	
 	

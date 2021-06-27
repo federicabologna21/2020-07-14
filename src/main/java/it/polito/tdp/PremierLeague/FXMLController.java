@@ -52,18 +52,21 @@ public class FXMLController {
     @FXML
     void doClassifica(ActionEvent event) {
 
+    	txtResult.clear();
+    	
     	Team t = this.cmbSquadra.getValue();
-    	if(t == null) {
-    		txtResult.appendText("Selezionare una squadra!");
+    	if( t == null) {
+    		txtResult.appendText("Creare il grafo e selezionare una squadra!\n");
     		return ;
     	}
+    	
     	txtResult.appendText("SQUADRE MIGLIORI:\n");
-    	for (TeamMigliori tm : this.model.getMigliori(t)) {
+    	for (TeamMigliori tm : this.model.getTeamMigliori(t)) {
     		txtResult.appendText(tm+"\n");
     	}
     	
-    	txtResult.appendText("SQUADRE PEGGIORI:\n");
-    	for (TeamPeggiori tp : this.model.getPeggiori(t)) {
+    	txtResult.appendText("\nSQUADRE PEGGIORI:\n");
+    	for (TeamPeggiori tp: this.model.getTeamPeggiori(t)) {
     		txtResult.appendText(tp+"\n");
     	}
     	
@@ -75,18 +78,36 @@ public class FXMLController {
     	txtResult.clear();
     	
     	this.model.creaGrafo();
-    	txtResult.appendText("GRAFO CREATO!");
-    	txtResult.appendText("# VERTICI: "+this.model.getNumeroVertici()+"\n");
-    	txtResult.appendText("# ARCHI: "+this.model.getNumeroArchi()+"\n");
-  
-    	this.cmbSquadra.getItems().addAll(this.model.getVerticiTendina());
+    	txtResult.appendText("GRAFO CREATO!\n");
+    	txtResult.appendText("# VERTICI: "+this.model.getNumVertici()+"\n");
+    	txtResult.appendText("# ARCHI: "+this.model.getNumArchi()+"\n");
     	
-    
+    	this.cmbSquadra.getItems().addAll(this.model.getVerticiTendina());
     }
 
     @FXML
     void doSimula(ActionEvent event) {
 
+    	String Nscelta = this.txtN.getText();
+    	int N;
+    	try {
+    		N = Integer.parseInt(Nscelta);
+    	} catch (NumberFormatException ne) {
+    		txtResult.appendText("Inserire un numero N di reporter!\n");
+    		return;
+    	}
+    	
+    	String soglia = this.txtX.getText();
+    	int X ;
+    	try {
+    		X = Integer.parseInt(soglia);
+    	} catch (NumberFormatException ne) {
+    		txtResult.appendText("Inserire una soglia critica, ossia un numero minimo di reporter!\n");
+    		return;
+    	}
+    	
+    	
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -102,7 +123,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
-    	
-    	
+    
     }
 }
